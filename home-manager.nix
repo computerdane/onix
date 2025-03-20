@@ -14,7 +14,7 @@ in
 
 mapAttrsToList (
   username:
-  { hm-config }:
+  { hm-configs }:
   {
 
     home-manager.users.${username} =
@@ -28,7 +28,7 @@ mapAttrsToList (
             overlaysModule
             hmModules
             ;
-          hm-config-name = hm-config;
+          hm-config-names = hm-configs;
         };
       };
 

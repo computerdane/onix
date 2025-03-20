@@ -28,8 +28,8 @@
 
       hm-config = olib.importOrEmpty (append src "home.nix");
       hm-configs = olib.importNixFilesRecursive "home" (append src "hm-configs");
+      hm-hosts = olib.importNixFiles (append src "hm-hosts");
       hm-modules = olib.importNixFilesRecursive "module" (append src "hm-modules");
-      hm-users = olib.importNixFiles (append src "hm-users");
     },
 
   # Overlay that adds all custom packages
@@ -73,30 +73,40 @@
       in
       # Home manager configurations
       (olib.eachDefaultSystemPkgs (pkgs: {
-        # Export a config named `${username}.${config}` for each user in the
-        # hm-users folder and each config they are assigned to use
+        # Export a config named `${username}.${host}` for each host and each
+        # user defined in the hm-hosts folder
         homeConfigurations = builtins.listToAttrs (
           flatten (
+            # For each host
             mapAttrsToList (
-              username: user:
-              (map (hm-config-name: {
-                name = "${username}.${hm-config-name}";
-                value = home-manager.lib.homeManagerConfiguration {
-                  inherit pkgs;
-                  modules = import ./home-manager-modules.nix {
-                    inherit
-                      nixpkgs
-                      username
-                      onix
-                      hm-config-name
-                      overlaysModule
-                      hmModules
-                      ;
+              hm-host:
+              {
+                hm-users ? { },
+              }:
+              # And each user in that host
+              mapAttrsToList (
+                username:
+                { hm-configs }:
+                {
+                  # Make a home-manager config labeled `${username}.${host}`
+                  name = "${username}@${hm-host}";
+                  value = home-manager.lib.homeManagerConfiguration {
+                    inherit pkgs;
+                    modules = import ./home-manager-modules.nix {
+                      inherit
+                        nixpkgs
+                        username
+                        onix
+                        overlaysModule
+                        hmModules
+                        ;
+                      hm-config-names = hm-configs;
+                    };
+                    extraSpecialArgs = hmSpecialArgs;
                   };
-                  extraSpecialArgs = hmSpecialArgs;
-                };
-              }) user.hm-configs)
-            ) onix.hm-users
+                }
+              ) hm-users
+            ) onix.hm-hosts
           )
         );
       }))
