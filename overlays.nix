@@ -1,7 +1,7 @@
-{ overlayList }:
+{ overlaysList }:
 
 { ... }:
 
 {
-  nixpkgs.overlays = overlayList;
+  nixpkgs.overlays = overlaysList;
 }

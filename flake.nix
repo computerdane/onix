@@ -3,12 +3,15 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    home-manager.url = "github:nix-community/home-manager/master";
+
+    home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
-    { nixpkgs, ... }:
+    { nixpkgs, home-manager, ... }:
     {
-      init = import ./init.nix { inherit nixpkgs; };
+      init = import ./init.nix { inherit nixpkgs home-manager; };
       templates.default = {
         path = ./template;
         description = "starter template for using onix";
