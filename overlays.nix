@@ -1,11 +1,7 @@
-{
-  olib,
-  onix,
-  overlays,
-}:
+{ overlayList }:
 
-{ pkgs, ... }:
+{ ... }:
 
 {
-  nixpkgs.overlays = overlays ++ [ (final: prev: (olib.callAllPackages pkgs onix.packages)) ];
+  nixpkgs.overlays = overlayList;
 }

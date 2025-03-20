@@ -34,7 +34,7 @@ Or, build your own Flake from scratch:
       onix.init {
         src = ./.;
         modules = [ ];     # Optional: import modules from other flakes here
-        overlays = [ ];    # Optional: add your own nixpkgs overlays
+        overlays = { };    # Optional: add your own nixpkgs overlays
         specialArgs = { }; # Optional: pass extra arguments to your configs
       };
   }

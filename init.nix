@@ -4,7 +4,7 @@
   src,
   modules ? [ ],
   specialArgs ? { },
-  overlays ? [ ],
+  overlays ? { },
   olib ? import ./olib.nix { inherit nixpkgs utils; },
   onix ?
     let
@@ -17,10 +17,16 @@
       modules = olib.importNixFilesRecursive "module" (append src "modules");
       packages = olib.importNixFilesRecursive "package" (append src "packages");
     },
+  defaultOverlay ? final: prev: (olib.callAllPackages prev onix.packages),
+  overlayList ? nixpkgs.lib.flatten [
+    (nixpkgs.lib.attrValues overlays)
+    defaultOverlay
+  ],
 }:
 
 {
   nixosModules = onix.modules;
+  overlays.default = defaultOverlay;
 
   packages =
     let
@@ -48,7 +54,7 @@
         onix.config
         onix.configs.${name}
         (attrValues onix.modules)
-        (import ./overlays.nix { inherit olib onix overlays; })
+        (import ./overlays.nix { inherit overlayList; })
         modules
       ];
     }
