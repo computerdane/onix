@@ -12,8 +12,7 @@
     in
     {
       config = olib.importOrEmpty (append src "configuration.nix");
-      configs = olib.importNixFiles (append src "configs");
-      hardwareConfigs = olib.importNixFiles (append src "hardware-configs");
+      configs = olib.importNixFilesRecursive "configuration" (append src "configs");
       hosts = olib.importNixFiles (append src "hosts");
       modules = olib.importNixFilesRecursive "module" (append src "modules");
       packages = olib.importNixFilesRecursive "package" (append src "packages");
@@ -48,7 +47,6 @@
         (import ./host-name.nix name)
         onix.config
         onix.configs.${name}
-        onix.hardwareConfigs.${name}
         (attrValues onix.modules)
         (import ./overlays.nix { inherit olib onix overlays; })
         modules
