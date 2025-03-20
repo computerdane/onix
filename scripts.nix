@@ -1,4 +1,5 @@
 {
+  home-manager,
   nix,
   nixos-rebuild,
   openssh,
@@ -12,6 +13,18 @@
     text = ''
       set +u
       sudo nixos-rebuild switch -v --flake .#"$1"
+    '';
+  })
+  (writeShellApplication {
+    name = "ohmswitch";
+    runtimeInputs = [ home-manager ];
+    text = ''
+      set +u
+      if [ -z "$1" ]; then
+        home-manager switch -v --flake .
+      else
+        home-manager switch -v --flake ."$1"
+      fi
     '';
   })
   (writeShellApplication {
