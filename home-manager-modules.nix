@@ -2,9 +2,9 @@
   nixpkgs,
   username,
   onix,
-  home-config-name,
+  hm-config-name,
   overlaysModule,
-  homeModules,
+  hmModules,
 }:
 
 let
@@ -12,9 +12,9 @@ let
 in
 flatten [
   (import ./home.nix username)
-  onix.home-config
-  onix.home-configs.${home-config-name}
-  (attrValues onix.home-modules)
+  onix.hm-config
+  onix.hm-configs.${hm-config-name}
+  (attrValues onix.hm-modules)
   overlaysModule
-  homeModules
+  hmModules
 ]

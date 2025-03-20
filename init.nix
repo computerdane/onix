@@ -10,8 +10,8 @@
   modules ? [ ],
   specialArgs ? { },
   overlays ? { },
-  homeModules ? [ ],
-  homeSpecialArgs ? { },
+  hmModules ? [ ],
+  hmSpecialArgs ? { },
 
   onix ?
     let
@@ -19,15 +19,17 @@
     in
     {
       # Read the directory tree and import all necessary files
+
       config = olib.importOrEmpty (append src "configuration.nix");
       configs = olib.importNixFilesRecursive "configuration" (append src "configs");
-      home-config = olib.importOrEmpty (append src "home.nix");
-      home-configs = olib.importNixFilesRecursive "home" (append src "home-configs");
-      home-modules = olib.importNixFilesRecursive "module" (append src "home-modules");
       hosts = olib.importNixFiles (append src "hosts");
       modules = olib.importNixFilesRecursive "module" (append src "modules");
       packages = olib.importNixFilesRecursive "package" (append src "packages");
-      users = olib.importNixFiles (append src "users");
+
+      hm-config = olib.importOrEmpty (append src "home.nix");
+      hm-configs = olib.importNixFilesRecursive "home" (append src "hm-configs");
+      hm-modules = olib.importNixFilesRecursive "module" (append src "hm-modules");
+      hm-users = olib.importNixFiles (append src "hm-users");
     },
 
   # Overlay that adds all custom packages
@@ -71,13 +73,13 @@
       # Home manager configurations
       (olib.eachDefaultSystemPkgs (pkgs: {
         # Export a config named `${username}.${config}` for each user in the
-        # users folder and each config they are assigned to use
+        # hm-users folder and each config they are assigned to use
         homeConfigurations = builtins.listToAttrs (
           flatten (
             mapAttrsToList (
               username: user:
-              (map (home-config-name: {
-                name = "${username}.${home-config-name}";
+              (map (hm-config-name: {
+                name = "${username}.${hm-config-name}";
                 value = home-manager.lib.homeManagerConfiguration {
                   inherit pkgs;
                   modules = import ./home-manager-modules.nix {
@@ -85,15 +87,15 @@
                       nixpkgs
                       username
                       onix
-                      home-config-name
+                      hm-config-name
                       overlaysModule
-                      homeModules
+                      hmModules
                       ;
                   };
-                  extraSpecialArgs = homeSpecialArgs;
+                  extraSpecialArgs = hmSpecialArgs;
                 };
-              }) user.home-configs)
-            ) onix.users
+              }) user.hm-configs)
+            ) onix.hm-users
           )
         );
       }))
@@ -109,22 +111,22 @@
     name:
     {
       system,
-      users ? { },
+      hm-users ? { },
     }:
     let
       inherit (nixpkgs.lib) nixosSystem flatten attrValues;
       modulesForHomeManager =
-        if users != { } then
+        if hm-users != { } then
           [
             home-manager.nixosModules.home-manager
             (import ./home-manager.nix {
               inherit
                 nixpkgs
-                users
+                hm-users
                 onix
                 overlaysModule
-                homeModules
-                homeSpecialArgs
+                hmModules
+                hmSpecialArgs
                 ;
             })
           ]

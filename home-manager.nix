@@ -1,10 +1,10 @@
 {
   nixpkgs,
-  users,
+  hm-users,
   onix,
   overlaysModule,
-  homeModules,
-  homeSpecialArgs,
+  hmModules,
+  hmSpecialArgs,
 }:
 
 let
@@ -14,7 +14,7 @@ in
 
 mapAttrsToList (
   username:
-  { home-config }:
+  { hm-config }:
   {
 
     home-manager.users.${username} =
@@ -26,12 +26,12 @@ mapAttrsToList (
             username
             onix
             overlaysModule
-            homeModules
+            hmModules
             ;
-          home-config-name = home-config;
+          hm-config-name = hm-config;
         };
       };
 
-    home-manager.extraSpecialArgs = homeSpecialArgs;
+    home-manager.extraSpecialArgs = hmSpecialArgs;
   }
-) users
+) hm-users
