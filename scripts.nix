@@ -7,7 +7,7 @@
 
 [
   (writeShellApplication {
-    name = "oswtich";
+    name = "oswitch";
     runtimeInputs = [ nixos-rebuild ];
     text = ''
       set +u
