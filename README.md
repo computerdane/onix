@@ -14,7 +14,7 @@
 Get started quickly by using the template:
 
 ```sh
-  nix flake init -t github:computerdane/onix
+  nix flake init -t github:computerdane/onix/v0.0.1
 ```
 
 Or, build your own Flake from scratch:
@@ -46,6 +46,7 @@ Example:
 
 ```
   ├── flake.nix
+  ├── configuration.nix                   Shared config for all hosts
   ├── hosts                               Define your hosts' architectures
   │   └── pc.nix
   ├── configs                             NixOS system configurations
