@@ -48,6 +48,7 @@
 {
   # Make custom modules available as outputs
   nixosModules = onix.modules;
+  homeManagerModules = onix.hm-modules;
 
   # Output an overlay for others to import custom packages
   overlays.default = defaultOverlay;
