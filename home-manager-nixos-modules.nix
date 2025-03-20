@@ -33,5 +33,6 @@ mapAttrsToList (
       };
 
     home-manager.extraSpecialArgs = hmSpecialArgs;
+
   }
 ) hm-users

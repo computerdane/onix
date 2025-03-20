@@ -126,11 +126,11 @@
     }:
     let
       inherit (nixpkgs.lib) nixosSystem flatten attrValues;
-      modulesForHomeManager =
+      homeManagerNixosModules =
         if hm-users != { } then
           [
             home-manager.nixosModules.home-manager
-            (import ./home-manager.nix {
+            (import ./home-manager-nixos-modules.nix {
               inherit
                 nixpkgs
                 hm-users
@@ -147,13 +147,13 @@
     nixosSystem {
       inherit system specialArgs;
       modules = flatten [
-        (import ./host-name.nix name)
+        (import ./host-name-module.nix name)
         onix.config
         onix.configs.${name}
         (attrValues onix.modules)
         overlaysModule
         modules
-        modulesForHomeManager
+        homeManagerNixosModules
       ];
     }
   ) onix.hosts;
