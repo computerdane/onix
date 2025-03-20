@@ -45,7 +45,7 @@ rec {
           name = fileNameOf dir;
         }
       ]
-    else
+    else if builtins.pathExists dir then
       # otherwise, include all .nix files and keep traversing the tree
       builtins.filter (e: isNixFile e.path) (
         flatten (
@@ -63,14 +63,19 @@ rec {
               }
           ) (builtins.readDir dir)
         )
-      );
+      )
+    else
+      [ ];
 
   # Import all of the .nix files in a directory
   importNixFiles =
     dir:
-    mapAttrs' (name: type: nameValuePair (withoutNixExt name) (import (append dir name))) (
-      listNixFiles dir
-    );
+    if builtins.pathExists dir then
+      mapAttrs' (name: type: nameValuePair (withoutNixExt name) (import (append dir name))) (
+        listNixFiles dir
+      )
+    else
+      { };
 
   # Generate an attrset with all the .nix files from listNixFilesRecursive imported
   importNixFilesRecursive =
