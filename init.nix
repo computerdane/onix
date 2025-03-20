@@ -51,48 +51,47 @@
   overlays.default = defaultOverlay;
 
   # Individual package outputs
-  packages =
-    (
-      let
-        inherit (nixpkgs.lib) filterAttrs isDerivation;
-      in
-      # All custom packages
-      olib.eachDefaultSystemPkgs (
-        pkgs: (filterAttrs (n: v: isDerivation v) (olib.callAllPackages pkgs onix.packages))
-      )
+  packages = (
+    let
+      inherit (nixpkgs.lib) filterAttrs isDerivation;
+    in
+    # All custom packages
+    olib.eachDefaultSystemPkgs (
+      pkgs: (filterAttrs (n: v: isDerivation v) (olib.callAllPackages pkgs onix.packages))
     )
-    // (
-      let
-        inherit (nixpkgs.lib) flatten mapAttrsToList attrValues;
-      in
-      # Home manager configurations
-      (olib.eachDefaultSystemPkgs (pkgs: {
-        # Export a config named `${username}.${config}` for each user in the
-        # users folder and each config they are assigned to use
-        homeConfigurations = builtins.listToAttrs (
-          flatten (
-            mapAttrsToList (
-              username: user:
-              (map (name: {
-                name = "${username}.${name}";
-                value = home-manager.lib.homeManagerConfiguration {
-                  inherit pkgs;
-                  modules = flatten [
-                    (import ./home.nix username)
-                    onix.home-config
-                    onix.home-configs.${name}
-                    (attrValues onix.home-modules)
-                    overlaysModule
-                    homeModules
-                  ];
-                  extraSpecialArgs = homeSpecialArgs;
-                };
-              }) user.configs)
-            ) onix.users
-          )
-        );
-      }))
-    );
+  );
+  # // (
+  #   let
+  #     inherit (nixpkgs.lib) flatten mapAttrsToList attrValues;
+  #   in
+  #   # Home manager configurations
+  #   (olib.eachDefaultSystemPkgs (pkgs: {
+  #     # Export a config named `${username}.${config}` for each user in the
+  #     # users folder and each config they are assigned to use
+  #     homeConfigurations = builtins.listToAttrs (
+  #       flatten (
+  #         mapAttrsToList (
+  #           username: user:
+  #           (map (name: {
+  #             name = "${username}.${name}";
+  #             value = home-manager.lib.homeManagerConfiguration {
+  #               inherit pkgs;
+  #               modules = flatten [
+  #                 (import ./home.nix username)
+  #                 onix.home-config
+  #                 onix.home-configs.${name}
+  #                 (attrValues onix.home-modules)
+  #                 overlaysModule
+  #                 homeModules
+  #               ];
+  #               extraSpecialArgs = homeSpecialArgs;
+  #             };
+  #           }) user.configs)
+  #         ) onix.users
+  #       )
+  #     );
+  #   }))
+  # );
 
   # Create a dev shell with some useful aliases
   devShells = olib.eachDefaultSystemPkgs (pkgs: {
@@ -118,4 +117,36 @@
       ];
     }
   ) onix.hosts;
+
+  # Export a config named `${username}.${config}` for each user in the
+  # users folder and each config they are assigned to use
+  homeConfigurations =
+    let
+      inherit (nixpkgs.lib) flatten mapAttrsToList attrValues;
+    in
+    (olib.eachDefaultSystemPkgs (
+      pkgs:
+      builtins.listToAttrs (
+        flatten (
+          mapAttrsToList (
+            username: user:
+            (map (name: {
+              name = "${username}.${name}";
+              value = home-manager.lib.homeManagerConfiguration {
+                inherit pkgs;
+                modules = flatten [
+                  (import ./home.nix username)
+                  onix.home-config
+                  onix.home-configs.${name}
+                  (attrValues onix.home-modules)
+                  overlaysModule
+                  homeModules
+                ];
+                extraSpecialArgs = homeSpecialArgs;
+              };
+            }) user.configs)
+          ) onix.users
+        )
+      )
+    ));
 }
