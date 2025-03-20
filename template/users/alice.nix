@@ -1,5 +1,5 @@
 {
-  configs = [
+  home-configs = [
     "minimal"
     "full"
   ];
