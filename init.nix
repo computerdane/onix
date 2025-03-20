@@ -66,7 +66,7 @@
     (olib.eachDefaultSystemPkgs (pkgs: olib.callAllPackages pkgs onix.packages))
     // (
       let
-        inherit (nixpkgs.lib) flatten mapAttrsToList attrValues;
+        inherit (nixpkgs.lib) flatten mapAttrsToList;
       in
       # Home manager configurations
       (olib.eachDefaultSystemPkgs (pkgs: {
@@ -76,18 +76,20 @@
           flatten (
             mapAttrsToList (
               username: user:
-              (map (name: {
-                name = "${username}.${name}";
+              (map (home-config-name: {
+                name = "${username}.${home-config-name}";
                 value = home-manager.lib.homeManagerConfiguration {
                   inherit pkgs;
-                  modules = flatten [
-                    (import ./home.nix username)
-                    onix.home-config
-                    onix.home-configs.${name}
-                    (attrValues onix.home-modules)
-                    overlaysModule
-                    homeModules
-                  ];
+                  modules = import ./home-manager-modules.nix {
+                    inherit
+                      nixpkgs
+                      username
+                      onix
+                      home-config-name
+                      overlaysModule
+                      homeModules
+                      ;
+                  };
                   extraSpecialArgs = homeSpecialArgs;
                 };
               }) user.configs)
@@ -105,9 +107,29 @@
   # Output nixos configs for each host
   nixosConfigurations = builtins.mapAttrs (
     name:
-    { system }:
+    {
+      system,
+      users ? { },
+    }:
     let
       inherit (nixpkgs.lib) nixosSystem flatten attrValues;
+      modulesForHomeManager =
+        if users != { } then
+          [
+            home-manager.nixosModules.home-manager
+            (import ./home-manager.nix {
+              inherit
+                nixpkgs
+                users
+                onix
+                overlaysModule
+                homeModules
+                homeSpecialArgs
+                ;
+            })
+          ]
+        else
+          [ ];
     in
     nixosSystem {
       inherit system specialArgs;
@@ -118,6 +140,7 @@
         (attrValues onix.modules)
         overlaysModule
         modules
+        modulesForHomeManager
       ];
     }
   ) onix.hosts;
