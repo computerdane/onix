@@ -14,5 +14,9 @@
     }:
     {
       init = import ./init.nix { inherit nixpkgs utils; };
+      templates.default = {
+        path = ./template;
+        description = "starter template for using onix";
+      };
     };
 }
