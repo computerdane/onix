@@ -5,7 +5,7 @@
   modules ? [ ],
   specialArgs ? { },
   overlays ? [ ],
-  olib ? import ./olib.nix { lib = nixpkgs.lib; },
+  olib ? import ./olib.nix { inherit nixpkgs utils; },
   onix ?
     let
       inherit (nixpkgs.lib.path) append;
@@ -24,16 +24,17 @@
   nixosModules = onix.modules;
 
   packages =
-    (utils.lib.eachDefaultSystem (
-      system:
-      let
-        inherit (nixpkgs.lib) filterAttrs isDerivation;
-        pkgs = import nixpkgs { inherit system; };
-      in
-      {
-        packages = (filterAttrs (n: v: isDerivation v) (olib.callAllPackages pkgs onix.packages));
-      }
-    )).packages;
+    let
+      inherit (nixpkgs.lib) filterAttrs isDerivation;
+    in
+    (olib.eachDefaultSystemPkgs (pkgs: {
+      packages = (filterAttrs (n: v: isDerivation v) (olib.callAllPackages pkgs onix.packages));
+    })).packages;
+
+  devShell =
+    (olib.eachDefaultSystemPkgs (pkgs: {
+      devShell = pkgs.mkShell { buildInputs = pkgs.callPackage ./scripts.nix { }; };
+    })).devShell;
 
   nixosConfigurations = builtins.mapAttrs (
     name:

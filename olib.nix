@@ -1,6 +1,7 @@
-{ lib }:
+{ nixpkgs, utils }:
 
 let
+  inherit (nixpkgs) lib;
   inherit (lib.lists) flatten;
   inherit (lib.attrsets)
     mapAttrs'
@@ -89,4 +90,15 @@ rec {
 
   # Calls all of the packages in an attrset
   callAllPackages = pkgs: attrs: builtins.mapAttrs (n: v: pkgs.callPackage v { }) attrs;
+
+  # Calls a function for each default system's pkgs
+  eachDefaultSystemPkgs =
+    f:
+    utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = import nixpkgs { inherit system; };
+      in
+      f pkgs
+    );
 }
