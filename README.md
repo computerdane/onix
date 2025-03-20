@@ -14,7 +14,7 @@
 Get started quickly by using the template:
 
 ```sh
-  nix flake init -t github:computerdane/onix/v0.0.1
+  nix flake init -t github:computerdane/onix/v0.0.2
 ```
 
 Or, build your own Flake from scratch:
@@ -25,7 +25,7 @@ Or, build your own Flake from scratch:
 
     inputs = {
       nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-      onix.url = "github:computerdane/onix";
+      onix.url = "github:computerdane/onix/v0.0.2";
       onix.inputs.nixpkgs.follows = "nixpkgs";
     };
 
