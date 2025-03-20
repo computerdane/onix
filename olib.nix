@@ -1,4 +1,12 @@
-{ nixpkgs, utils }:
+{
+  nixpkgs,
+  defaultSystems ? [
+    "aarch64-linux"
+    "aarch64-darwin"
+    "x86_64-darwin"
+    "x86_64-linux"
+  ],
+}:
 
 let
   inherit (nixpkgs) lib;
@@ -99,11 +107,14 @@ rec {
   # Calls a function for each default system's pkgs
   eachDefaultSystemPkgs =
     f:
-    utils.lib.eachDefaultSystem (
-      system:
-      let
-        pkgs = import nixpkgs { inherit system; };
-      in
-      f pkgs
+    builtins.listToAttrs (
+      map (system: {
+        name = system;
+        value =
+          let
+            pkgs = import nixpkgs { inherit system; };
+          in
+          f pkgs;
+      }) defaultSystems
     );
 }

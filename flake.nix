@@ -3,17 +3,12 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    utils.url = "github:numtide/flake-utils";
   };
 
   outputs =
+    { nixpkgs, ... }:
     {
-      nixpkgs,
-      utils,
-      ...
-    }:
-    {
-      init = import ./init.nix { inherit nixpkgs utils; };
+      init = import ./init.nix { inherit nixpkgs; };
       templates.default = {
         path = ./template;
         description = "starter template for using onix";
