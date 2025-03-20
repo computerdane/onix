@@ -92,7 +92,7 @@
                   };
                   extraSpecialArgs = homeSpecialArgs;
                 };
-              }) user.configs)
+              }) user.home-configs)
             ) onix.users
           )
         );
