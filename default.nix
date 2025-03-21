@@ -1,11 +1,11 @@
 {
-  pkgs ? import <nixpkgs> { },
+  nixpkgs,
 }:
 
 let
-  olib = pkgs.callPackage ./olib.nix { };
+  olib = import ./olib.nix { lib = nixpkgs.lib; };
 in
 
 {
-  init = pkgs.callPackage ./init.nix { inherit olib; };
+  init = import ./init.nix { inherit nixpkgs olib; };
 }

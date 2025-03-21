@@ -1,13 +1,10 @@
 {
+  nixpkgs,
   olib,
-  lib,
-  callPackage,
 }:
 
 {
   src,
-
-  nixpkgsConfig ? { },
 
   extraModules ? [ ],
   extraOverlays ? { },
@@ -15,18 +12,16 @@
 
 let
 
-  inherit (lib)
+  inherit (nixpkgs.lib)
     attrValues
-    concatMapAttrs
     filterAttrs
     flatten
-    isDerivation
-    listToAttrs
     mapAttrs
     mapAttrsToList
+    concatMapAttrs
     unique
     ;
-  inherit (lib.path) append;
+  inherit (nixpkgs.lib.path) append;
 
   files = {
     config = olib.importOrEmpty (append src "configuration.nix");
@@ -43,12 +38,15 @@ let
   systems = unique (mapAttrsToList (name: host: host.system) files.hosts);
   eachSystem =
     attrs:
-    listToAttrs (
-      map (name: {
-        inherit name;
-        value = attrs;
-      }) systems
-    );
+    concatMapAttrs (
+      name: value:
+      builtins.listToAttrs (
+        map (system: {
+          inherit name;
+          value.${system} = value;
+        }) systems
+      )
+    ) attrs;
 
   mkModule = {
     hostName =
@@ -66,8 +64,6 @@ let
       };
   };
 
-  allPackages = mapAttrs (name: pkg: callPackage pkg { }) files.packages;
-
 in
 
 rec {
@@ -75,14 +71,8 @@ rec {
   nixosModules = files.modules;
   homeManagerModules = files.hm-modules;
 
-  # All custom packages
-  legacyPackages = eachSystem allPackages;
-
-  # Custom packages, derivations only
-  packages = eachSystem (filterAttrs (name: pkg: isDerivation pkg) allPackages);
-
   # Overlay that imports all custom packages
-  overlays.default = final: prev: allPackages;
+  overlays.default = final: prev: mapAttrs (name: pkg: prev.callPackage pkg { }) files.packages;
 
   # NixOS configuration for each host
   nixosConfigurations =
@@ -91,22 +81,24 @@ rec {
     in
     mapAttrs (
       name: host:
-      let
-        pkgs = import <nixpkgs> {
-          system = host.system;
-          overlays = flatten [
-            (attrValues overlays)
-            (attrValues extraOverlays)
-          ];
-          config = nixpkgsConfig;
-        };
-      in
-      pkgs.nixos (flatten [
-        (mkModule.hostName name)
-        (attrValues files.modules)
-        files.config
-        files.configs.${name}
-        extraModules
-      ])
+      nixpkgs.lib.nixosSystem {
+        system = host.system;
+        modules = flatten [
+          (mkModule.hostName name)
+          (mkModule.overlays overlays)
+          (mkModule.overlays extraOverlays)
+          (attrValues files.modules)
+          files.config
+          files.configs.${name}
+          extraModules
+        ];
+      }
     ) nixosHosts;
 }
+// (eachSystem (
+  system:
+  let
+    pkgs = import nixpkgs { inherit system; };
+  in
+  pkgs.callPackage ./per-system.nix { inherit files; }
+))
