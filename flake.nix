@@ -1,4 +1,4 @@
 {
   inputs = { };
-  outputs = import ./default.nix;
+  outputs = { ... }: import ./default.nix { };
 }
