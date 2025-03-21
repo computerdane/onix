@@ -85,7 +85,7 @@ rec {
   packages = eachSystem (filterAttrs (name: pkg: isDerivation pkg) allPackages);
 
   # Overlay that imports all custom packages
-  overlays.default = final: prev: packages;
+  overlays.default = final: prev: legacyPackages;
 
   # NixOS configuration for each host
   nixosConfigurations =
