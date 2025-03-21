@@ -10,6 +10,7 @@
 
 let
   inherit (lib)
+    attrNames
     filterAttrs
     flatten
     hasSuffix
@@ -100,4 +101,28 @@ rec {
 
   # Imports a .nix file, and if it doesn't exist, returns a blank function
   importOrEmpty = path: if builtins.pathExists path then import path else { ... }: { };
+
+  # From github:numtide/flake-utils
+  # Builds a map from <attr>=value to <attr>.<system>=value for each system.
+  eachSystem = eachSystemOp (
+    # Merge outputs for each system.
+    f: attrs: system:
+    let
+      ret = f system;
+    in
+    builtins.foldl' (
+      attrs: key:
+      attrs
+      // {
+        ${key} = (attrs.${key} or { }) // {
+          ${system} = ret.${key};
+        };
+      }
+    ) attrs (attrNames ret)
+  );
+
+  # Applies a merge operation accross systems.
+  eachSystemOp =
+    op: systems: f:
+    builtins.foldl' (op f) { } systems;
 }

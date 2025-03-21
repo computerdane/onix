@@ -18,7 +18,6 @@ let
     flatten
     mapAttrs
     mapAttrsToList
-    mergeAttrsList
     unique
     ;
   inherit (nixpkgs.lib.path) append;
@@ -84,12 +83,10 @@ rec {
       }
     ) nixosHosts;
 }
-// (mergeAttrsList (
-  map (
-    system:
-    let
-      pkgs = import nixpkgs { inherit system; };
-    in
-    pkgs.callPackage ./per-system.nix { inherit files system; }
-  ) systems
+// (olib.eachSystem systems (
+  system:
+  let
+    pkgs = import nixpkgs { inherit system; };
+  in
+  pkgs.callPackage ./per-system.nix { inherit files; }
 ))

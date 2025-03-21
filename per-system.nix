@@ -2,7 +2,6 @@
   callPackage,
   files,
   lib,
-  system,
 }:
 
 let
@@ -12,8 +11,8 @@ let
 in
 {
   # All custom packages
-  legacyPackages.${system} = allPackages;
+  legacyPackages = allPackages;
 
   # Custom packages, derivations only
-  packages.${system} = (filterAttrs (name: pkg: isDerivation pkg) allPackages);
+  packages = (filterAttrs (name: pkg: isDerivation pkg) allPackages);
 }
