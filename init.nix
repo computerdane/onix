@@ -113,7 +113,7 @@ rec {
 // (olib.eachSystem systems (
   system:
   let
-    pkgs = import nixpkgs { inherit system; };
+    p = import nixpkgs { inherit system; };
   in
-  pkgs.callPackage ./per-system.nix { inherit files; }
+  p.callPackage ./per-system.nix { inherit files; }
 ))
