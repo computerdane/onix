@@ -2,6 +2,7 @@
   olib,
   lib,
   callPackage,
+  nixos,
 }:
 
 {
@@ -70,20 +71,17 @@ rec {
     in
     mapAttrs (
       name: host:
-      nixosSystem {
-        system = host.system;
-        modules = flatten [
-          (mkModule.hostname name)
-          (mkModule.overlays overlays)
+      nixos (flatten [
+        (mkModule.hostname name)
+        (mkModule.overlays overlays)
 
-          (mkModule.overlays extraOverlays)
-          extraModules
+        (mkModule.overlays extraOverlays)
+        extraModules
 
-          (attrValues files.modules)
+        (attrValues files.modules)
 
-          files.config
-          files.configs.${name}
-        ];
-      }
+        files.config
+        files.configs.${name}
+      ])
     ) nixosHosts;
 }
