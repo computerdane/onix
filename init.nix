@@ -47,7 +47,7 @@ let
       name: value:
       listToAttrs (
         map (system: {
-          name = "${name}.${system}";
+          name = "${system}.${name}";
           inherit value;
         }) systems
       )
@@ -85,7 +85,7 @@ rec {
   packages = eachSystem (filterAttrs (name: pkg: isDerivation pkg) allPackages);
 
   # Overlay that imports all custom packages
-  overlays.default = final: prev: legacyPackages;
+  overlays.default = final: prev: allPackages;
 
   # NixOS configuration for each host
   nixosConfigurations =
