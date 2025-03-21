@@ -1,5 +1,5 @@
 {
-  lib,
+  flake ? true,
   nixpkgs,
   src,
 
@@ -8,6 +8,8 @@
 }:
 
 let
+  pkgs = if flake then null else import nixpkgs { };
+  lib = if flake then nixpkgs.lib else pkgs.lib;
 
   inherit (lib)
     attrValues
@@ -68,8 +70,7 @@ rec {
     in
     mapAttrs (
       name: host:
-      lib.nixosSystem {
-        system = host.system;
+      let
         modules = flatten [
           (mkModule.hostName name)
           (mkModule.overlays overlays)
@@ -79,7 +80,14 @@ rec {
           files.configs.${name}
           extraModules
         ];
-      }
+      in
+      if flake then
+        lib.nixosSystem {
+          system = host.system;
+          inherit modules;
+        }
+      else
+        pkgs.nixos modules
     ) nixosHosts;
 }
 // (olib.eachSystem systems (
