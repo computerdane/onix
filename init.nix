@@ -71,7 +71,7 @@ rec {
     mapAttrs (
       name: host:
       nixos (flatten [
-        (mkModule.hostname name)
+        (mkModule.hostName name)
         (mkModule.overlays overlays)
 
         (mkModule.overlays extraOverlays)
