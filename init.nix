@@ -1,9 +1,5 @@
 {
   nixpkgs,
-  olib,
-}:
-
-{
   src,
 
   extraModules ? [ ],
@@ -21,6 +17,8 @@ let
     unique
     ;
   inherit (nixpkgs.lib.path) append;
+
+  olib = import ./olib.nix { lib = nixpkgs.lib; };
 
   files = {
     config = olib.importOrEmpty (append src "configuration.nix");
