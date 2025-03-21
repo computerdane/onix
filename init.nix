@@ -18,7 +18,7 @@ let
     flatten
     mapAttrs
     mapAttrsToList
-    concatMapAttrs
+    mergeAttrsList
     unique
     ;
   inherit (nixpkgs.lib.path) append;
@@ -36,17 +36,6 @@ let
   };
 
   systems = unique (mapAttrsToList (name: host: host.system) files.hosts);
-  eachSystem =
-    attrs:
-    concatMapAttrs (
-      name: value:
-      builtins.listToAttrs (
-        map (system: {
-          inherit name;
-          value.${system} = value;
-        }) systems
-      )
-    ) attrs;
 
   mkModule = {
     hostName =
@@ -95,10 +84,12 @@ rec {
       }
     ) nixosHosts;
 }
-// (eachSystem (
-  system:
-  let
-    pkgs = import nixpkgs { inherit system; };
-  in
-  pkgs.callPackage ./per-system.nix { inherit files; }
+// (mergeAttrsList (
+  map (
+    system:
+    let
+      pkgs = import nixpkgs { inherit system; };
+    in
+    pkgs.callPackage ./per-system.nix { inherit files system; }
+  ) systems
 ))
