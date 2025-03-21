@@ -1,7 +1,6 @@
 {
   nixpkgs ? <nixpkgs>,
-  system ? null,
-  pkgs ? import nixpkgs { inherit system; },
+  pkgs ? import nixpkgs { },
 }:
 
 let
