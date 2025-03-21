@@ -83,7 +83,6 @@ rec {
           (mkModule.hostName name)
           (mkModule.overlays overlays)
           (mkModule.overlays extraOverlays)
-          (mkModule.nixpkgsConfig nixpkgsConfig)
           (attrValues files.modules)
           files.config
           files.configs.${name}
@@ -93,7 +92,7 @@ rec {
       if flake then
         lib.nixosSystem {
           system = host.system;
-          inherit modules;
+          modules = modules ++ [ (mkModule.nixpkgsConfig nixpkgsConfig) ];
         }
       else
         pkgs.nixos modules
