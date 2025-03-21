@@ -1,4 +1,8 @@
 {
   inputs = { };
-  outputs = { ... }: import ./default.nix { };
+  outputs =
+    { ... }:
+    {
+      init = import ./init.nix;
+    };
 }

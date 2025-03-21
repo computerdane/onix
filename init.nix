@@ -1,18 +1,11 @@
 {
-  flake ? true,
   nixpkgs,
   src,
-
   extraModules ? [ ],
-  extraOverlays ? { },
-  nixpkgsConfig ? { },
 }:
 
 let
-  defaultOverlay = final: prev: mapAttrs (name: pkg: prev.callPackage pkg { }) files.packages;
-
-  pkgs = if flake then null else import nixpkgs { };
-  lib = if flake then nixpkgs.lib else pkgs.lib;
+  lib = nixpkgs.lib;
 
   inherit (lib)
     attrValues
@@ -23,15 +16,6 @@ let
     unique
     ;
   inherit (lib.path) append;
-
-  systemPkgs =
-    if flake then
-      null
-    else
-      import nixpkgs {
-        config = nixpkgsConfig;
-        overlays = [ defaultOverlay ] ++ (attrValues extraOverlays);
-      };
 
   olib = import ./olib.nix { inherit lib; };
 
@@ -49,29 +33,6 @@ let
 
   systems = unique (mapAttrsToList (name: host: host.system) files.hosts);
 
-  mkModule = {
-    hostName =
-      name:
-      { ... }:
-      {
-        networking.hostName = name;
-      };
-
-    overlays =
-      overlays:
-      { ... }:
-      {
-        nixpkgs.overlays = attrValues overlays;
-      };
-
-    nixpkgsConfig =
-      c:
-      { ... }:
-      {
-        nixpkgs.config = c;
-      };
-  };
-
 in
 
 rec {
@@ -88,34 +49,30 @@ rec {
       nixosHosts = (filterAttrs (name: host: (host.homeManagerOnly or false) == false) files.hosts);
     in
     mapAttrs (
-      name: host:
+      name:
+      { system, ... }:
       let
         modules = flatten [
-          (mkModule.hostName name)
+          (
+            { ... }:
+            {
+              networking.hostName = name;
+              nixpkgs.overlays = [ overlays.default ];
+            }
+          )
           (attrValues files.modules)
           files.config
           files.configs.${name}
           extraModules
         ];
-        nixpkgsModules = flatten [
-          (mkModule.nixpkgsConfig nixpkgsConfig)
-          (mkModule.overlays overlays)
-          (mkModule.overlays extraOverlays)
-        ];
       in
-      if flake then
-        lib.nixosSystem {
-          system = host.system;
-          modules = modules ++ nixpkgsModules;
-        }
-      else
-        systemPkgs.nixos modules
+      lib.nixosSystem { inherit system modules; }
     ) nixosHosts;
 }
 // (olib.eachSystem systems (
   system:
   let
-    p = import nixpkgs { inherit system; };
+    pkgs = import nixpkgs { inherit system; };
   in
-  p.callPackage ./per-system.nix { inherit files; }
+  pkgs.callPackage ./per-system.nix { inherit files; }
 ))

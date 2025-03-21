@@ -1,5 +1,0 @@
-{ ... }:
-
-{
-  init = import ./init.nix;
-}
