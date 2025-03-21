@@ -1,24 +1,24 @@
 {
-  nixpkgs,
-  defaultSystems ? [
-    "aarch64-linux"
-    "aarch64-darwin"
-    "x86_64-darwin"
-    "x86_64-linux"
-  ],
+  lib,
+# defaultSystems ? [
+#   "aarch64-linux"
+#   "aarch64-darwin"
+#   "x86_64-darwin"
+#   "x86_64-linux"
+# ],
 }:
 
 let
-  inherit (nixpkgs) lib;
-  inherit (lib.lists) flatten;
-  inherit (lib.attrsets)
+  inherit (lib)
+    flatten
     mapAttrs'
     nameValuePair
     filterAttrs
     mapAttrsToList
+    append
+    hasSuffix
+    removeSuffix
     ;
-  inherit (lib.path) append;
-  inherit (lib.strings) hasSuffix removeSuffix;
 in
 
 rec {
@@ -100,21 +100,4 @@ rec {
 
   # Imports a .nix file, and if it doesn't exist, returns a blank function
   importOrEmpty = path: if builtins.pathExists path then import path else { ... }: { };
-
-  # Calls all of the packages in an attrset
-  callAllPackages = pkgs: attrs: builtins.mapAttrs (n: v: pkgs.callPackage v { }) attrs;
-
-  # Calls a function for each default system's pkgs
-  eachDefaultSystemPkgs =
-    f:
-    builtins.listToAttrs (
-      map (system: {
-        name = system;
-        value =
-          let
-            pkgs = import nixpkgs { inherit system; };
-          in
-          f pkgs;
-      }) defaultSystems
-    );
 }
