@@ -1,4 +1,5 @@
 {
+  lib,
   nixpkgs,
   src,
 
@@ -8,7 +9,7 @@
 
 let
 
-  inherit (nixpkgs.lib)
+  inherit (lib)
     attrValues
     filterAttrs
     flatten
@@ -16,9 +17,9 @@ let
     mapAttrsToList
     unique
     ;
-  inherit (nixpkgs.lib.path) append;
+  inherit (lib.path) append;
 
-  olib = import ./olib.nix { lib = nixpkgs.lib; };
+  olib = import ./olib.nix { inherit lib; };
 
   files = {
     config = olib.importOrEmpty (append src "configuration.nix");
@@ -67,7 +68,7 @@ rec {
     in
     mapAttrs (
       name: host:
-      nixpkgs.lib.nixosSystem {
+      lib.nixosSystem {
         system = host.system;
         modules = flatten [
           (mkModule.hostName name)
