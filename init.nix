@@ -9,7 +9,16 @@
 }:
 
 let
-  pkgs = if flake then null else import nixpkgs { config = nixpkgsConfig; };
+  defaultOverlay = final: prev: mapAttrs (name: pkg: prev.callPackage pkg { }) files.packages;
+
+  pkgs =
+    if flake then
+      null
+    else
+      import nixpkgs {
+        config = nixpkgsConfig;
+        overlays = (attrValues defaultOverlay) ++ (attrValues extraOverlays);
+      };
   lib = if flake then nixpkgs.lib else pkgs.lib;
 
   inherit (lib)
@@ -81,18 +90,21 @@ rec {
       let
         modules = flatten [
           (mkModule.hostName name)
-          (mkModule.overlays overlays)
-          (mkModule.overlays extraOverlays)
           (attrValues files.modules)
           files.config
           files.configs.${name}
           extraModules
         ];
+        nixpkgsModules = flatten [
+          (mkModule.nixpkgsConfig nixpkgsConfig)
+          (mkModule.overlays overlays)
+          (mkModule.overlays extraOverlays)
+        ];
       in
       if flake then
         lib.nixosSystem {
           system = host.system;
-          modules = modules ++ [ (mkModule.nixpkgsConfig nixpkgsConfig) ];
+          modules = modules ++ nixpkgsModules;
         }
       else
         pkgs.nixos modules
