@@ -19,6 +19,7 @@ let
     attrValues
     filterAttrs
     flatten
+    isDerivation
     mapAttrs
     ;
   inherit (lib.path) append;
@@ -58,8 +59,11 @@ rec {
   nixosModules = files.modules;
   homeManagerModules = files.hm-modules;
 
-  # Custom packages
-  packages = mapAttrs (name: pkg: callPackage pkg { }) files.packages;
+  # All custom packages
+  legacyPackages = mapAttrs (name: pkg: callPackage pkg { }) files.packages;
+
+  # Custom packages, derivations only
+  packages = filterAttrs (name: pkg: isDerivation pkg) legacyPackages;
 
   # Overlay that imports all custom packages
   overlays.default = final: prev: packages;
