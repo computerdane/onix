@@ -2,7 +2,6 @@
   olib,
   lib,
   callPackage,
-  nixos,
 }:
 
 {
@@ -19,7 +18,6 @@ let
     filterAttrs
     flatten
     mapAttrs
-    nixosSystem
     ;
   inherit (lib.path) append;
 
@@ -71,22 +69,23 @@ rec {
     in
     mapAttrs (
       name: host:
-      nixosSystem {
-        system = host.system;
-        modules = (
-          flatten [
-            (mkModule.hostName name)
-            (mkModule.overlays overlays)
-
-            (mkModule.overlays extraOverlays)
-            extraModules
-
-            (attrValues files.modules)
-
-            files.config
-            files.configs.${name}
-          ]
-        );
-      }
+      let
+        pkgs = import <nixpkgs> {
+          system = host.system;
+          overlays = flatten [
+            (attrValues overlays)
+            (attrValues extraOverlays)
+          ];
+        };
+      in
+      pkgs.nixos [
+        (flatten [
+          (mkModule.hostName name)
+          (attrValues files.modules)
+          files.config
+          files.configs.${name}
+          extraModules
+        ])
+      ]
     ) nixosHosts;
 }
