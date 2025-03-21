@@ -28,7 +28,6 @@
 
       hm-config = olib.importOrEmpty (append src "home.nix");
       hm-configs = olib.importNixFilesRecursive "home" (append src "hm-configs");
-      hm-hosts = olib.importNixFiles (append src "hm-hosts");
       hm-modules = olib.importNixFilesRecursive "module" (append src "hm-modules");
     },
 
@@ -74,12 +73,12 @@
       # Home manager configurations
       (olib.eachDefaultSystemPkgs (pkgs: {
         # Export a config named `${username}.${host}` for each host and each
-        # user defined in the hm-hosts folder
+        # user defined in the hosts folder
         homeConfigurations = builtins.listToAttrs (
           flatten (
             # For each host
             mapAttrsToList (
-              hm-host:
+              host:
               {
                 hm-users ? { },
               }:
@@ -89,7 +88,7 @@
                 { hm-configs }:
                 {
                   # Make a home-manager config labeled `${username}.${host}`
-                  name = "${username}@${hm-host}";
+                  name = "${username}@${host}";
                   value = home-manager.lib.homeManagerConfiguration {
                     inherit pkgs;
                     modules = import ./home-manager-modules.nix {
@@ -106,7 +105,7 @@
                   };
                 }
               ) hm-users
-            ) onix.hm-hosts
+            ) onix.hosts
           )
         );
       }))
@@ -118,43 +117,51 @@
   });
 
   # Output nixos configs for each host
-  nixosConfigurations = builtins.mapAttrs (
-    name:
-    {
-      system,
-      hm-users ? { },
-    }:
+  nixosConfigurations =
     let
-      inherit (nixpkgs.lib) nixosSystem flatten attrValues;
-      homeManagerNixosModules =
-        if hm-users != { } then
-          [
-            home-manager.nixosModules.home-manager
-            (import ./home-manager-nixos-modules.nix {
-              inherit
-                nixpkgs
-                hm-users
-                onix
-                overlaysModule
-                hmModules
-                hmSpecialArgs
-                ;
-            })
-          ]
-        else
-          [ ];
+      inherit (nixpkgs.lib)
+        nixosSystem
+        flatten
+        attrValues
+        filterAttrs
+        ;
     in
-    nixosSystem {
-      inherit system specialArgs;
-      modules = flatten [
-        (import ./host-name-module.nix name)
-        onix.config
-        onix.configs.${name}
-        (attrValues onix.modules)
-        overlaysModule
-        modules
-        homeManagerNixosModules
-      ];
-    }
-  ) onix.hosts;
+    builtins.mapAttrs (
+      name:
+      {
+        system,
+        hm-users ? { },
+      }:
+      let
+        homeManagerNixosModules =
+          if hm-users != { } then
+            [
+              home-manager.nixosModules.home-manager
+              (import ./home-manager-nixos-modules.nix {
+                inherit
+                  nixpkgs
+                  hm-users
+                  onix
+                  overlaysModule
+                  hmModules
+                  hmSpecialArgs
+                  ;
+              })
+            ]
+          else
+            [ ];
+      in
+      nixosSystem {
+        inherit system specialArgs;
+        modules = flatten [
+          (import ./host-name-module.nix name)
+          onix.config
+          onix.configs.${name}
+          (attrValues onix.modules)
+          overlaysModule
+          modules
+          homeManagerNixosModules
+        ];
+      }
+    ) (filterAttrs (name: host: (host.homeManagerOnly or false) == false) onix.hosts);
 }
