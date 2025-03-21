@@ -47,8 +47,8 @@ let
       name: value:
       listToAttrs (
         map (system: {
-          name = "${system}.${name}";
-          inherit value;
+          name = system;
+          value.${name} = value;
         }) systems
       )
     ) attrs;
