@@ -1,12 +1,12 @@
 {
   callPackage,
-  home-manager,
   lib,
   pkgs,
 
   extraHomeManagerModules,
   extraHomeManagerSpecialArgs,
   files,
+  home-manager,
   overlays,
 }:
 

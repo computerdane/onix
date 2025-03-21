@@ -112,6 +112,7 @@ rec {
         extraHomeManagerModules
         extraHomeManagerSpecialArgs
         files
+        home-manager
         overlays
         ;
     }
