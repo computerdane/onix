@@ -42,16 +42,17 @@ let
   # Grab unique systems from `hosts/`
   systems = unique (mapAttrsToList (name: host: host.system) files.hosts);
 
+  # Overlay that imports all custom packages
+  overlays.default = final: prev: mapAttrs (name: pkg: prev.callPackage pkg { }) files.packages;
+
 in
 
 rec {
+  inherit overlays;
 
   # Custom modules
   nixosModules = files.modules;
   homeManagerModules = files.hm-modules;
-
-  # Overlay that imports all custom packages
-  overlays.default = final: prev: mapAttrs (name: pkg: prev.callPackage pkg { }) files.packages;
 
   # NixOS configuration for each host
   nixosConfigurations =
@@ -73,6 +74,7 @@ rec {
             files
             home-manager
             lib
+            overlays
             users
             ;
         };
@@ -111,6 +113,7 @@ rec {
         extraHomeManagerSpecialArgs
         files
         olib
+        overlays
         ;
     }
   )

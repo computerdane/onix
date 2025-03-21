@@ -3,6 +3,7 @@
   files,
   hm-configs,
   lib,
+  overlays,
   username,
 }:
 
@@ -16,6 +17,7 @@ flatten [
     {
       home.username = username;
       programs.home-manager.enable = true;
+      nixpkgs.overlays = attrValues overlays;
     }
   )
   (attrValues files.hm-modules)

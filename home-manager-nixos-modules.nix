@@ -4,6 +4,7 @@
   files,
   home-manager,
   lib,
+  overlays,
   users,
 }:
 
@@ -28,6 +29,7 @@ flatten [
               files
               hm-configs
               lib
+              overlays
               username
               ;
           };

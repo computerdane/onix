@@ -1,12 +1,14 @@
 {
   callPackage,
+  home-manager,
+  lib,
+  pkgs,
+
   extraHomeManagerModules,
   extraHomeManagerSpecialArgs,
   files,
-  home-manager,
-  lib,
   olib,
-  pkgs,
+  overlays,
 }:
 
 let
@@ -46,6 +48,7 @@ let
                     files
                     hm-configs
                     lib
+                    overlays
                     username
                     ;
                 };
