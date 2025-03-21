@@ -1,7 +1,14 @@
 {
   nixpkgs,
+  home-manager ? null,
+
   src,
+
   extraModules ? [ ],
+  extraHomeManagerModules ? [ ],
+
+  extraSpecialArgs ? { },
+  extraHomeManagerSpecialArgs ? { },
 }:
 
 let
@@ -53,8 +60,22 @@ rec {
     in
     mapAttrs (
       name:
-      { system, ... }:
+      {
+        system,
+        users ? { },
+        ...
+      }:
       let
+        homeManagerNixosModules = import ./home-manager-nixos-modules.nix {
+          inherit
+            extraHomeManagerModules
+            extraHomeManagerSpecialArgs
+            files
+            home-manager
+            lib
+            users
+            ;
+        };
         modules = flatten [
           (
             { ... }:
@@ -67,9 +88,13 @@ rec {
           files.config
           files.configs.${name}
           extraModules
+          homeManagerNixosModules
         ];
       in
-      lib.nixosSystem { inherit system modules; }
+      lib.nixosSystem {
+        inherit system modules;
+        specialArgs = extraSpecialArgs;
+      }
     ) nixosHosts;
 
 }
@@ -80,6 +105,13 @@ rec {
     let
       pkgs = import nixpkgs { inherit system; };
     in
-    pkgs.callPackage ./per-system.nix { inherit files; }
+    pkgs.callPackage ./per-system.nix {
+      inherit
+        extraHomeManagerModules
+        extraHomeManagerSpecialArgs
+        files
+        olib
+        ;
+    }
   )
 )
