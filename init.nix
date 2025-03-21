@@ -17,10 +17,14 @@ let
 
   inherit (lib)
     attrValues
+    concatMapAttrs
     filterAttrs
     flatten
     isDerivation
+    listToAttrs
     mapAttrs
+    mapAttrsToList
+    unique
     ;
   inherit (lib.path) append;
 
@@ -35,6 +39,19 @@ let
     hm-configs = olib.importNixFilesRecursive "home" (append src "hm-configs");
     hm-modules = olib.importNixFilesRecursive "module" (append src "hm-modules");
   };
+
+  systems = unique (mapAttrsToList (name: host: host.system) files.hosts);
+  eachSystem =
+    attrs:
+    concatMapAttrs (
+      name: value:
+      listToAttrs (
+        map (system: {
+          name = "${name}.${system}";
+          inherit value;
+        }) systems
+      )
+    ) attrs;
 
   mkModule = {
     hostName =
@@ -52,6 +69,8 @@ let
       };
   };
 
+  allPackages = mapAttrs (name: pkg: callPackage pkg { }) files.packages;
+
 in
 
 rec {
@@ -60,10 +79,10 @@ rec {
   homeManagerModules = files.hm-modules;
 
   # All custom packages
-  legacyPackages = mapAttrs (name: pkg: callPackage pkg { }) files.packages;
+  legacyPackages = eachSystem allPackages;
 
   # Custom packages, derivations only
-  packages = filterAttrs (name: pkg: isDerivation pkg) legacyPackages;
+  packages = eachSystem (filterAttrs (name: pkg: isDerivation pkg) allPackages);
 
   # Overlay that imports all custom packages
   overlays.default = final: prev: packages;
