@@ -19,6 +19,7 @@ let
     filterAttrs
     flatten
     mapAttrs
+    nixosSystem
     ;
   inherit (lib.path) append;
 
@@ -70,17 +71,22 @@ rec {
     in
     mapAttrs (
       name: host:
-      nixos (flatten [
-        (mkModule.hostName name)
-        (mkModule.overlays overlays)
+      nixosSystem {
+        system = host.system;
+        modules = (
+          flatten [
+            (mkModule.hostName name)
+            (mkModule.overlays overlays)
 
-        (mkModule.overlays extraOverlays)
-        extraModules
+            (mkModule.overlays extraOverlays)
+            extraModules
 
-        (attrValues files.modules)
+            (attrValues files.modules)
 
-        files.config
-        files.configs.${name}
-      ])
+            files.config
+            files.configs.${name}
+          ]
+        );
+      }
     ) nixosHosts;
 }
