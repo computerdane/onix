@@ -7,6 +7,8 @@
 {
   src,
 
+  nixpkgsConfig ? { },
+
   extraModules ? [ ],
   extraOverlays ? { },
 }:
@@ -76,6 +78,7 @@ rec {
             (attrValues overlays)
             (attrValues extraOverlays)
           ];
+          config = nixpkgsConfig;
         };
       in
       pkgs.nixos (flatten [
