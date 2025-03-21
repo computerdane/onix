@@ -78,14 +78,12 @@ rec {
           ];
         };
       in
-      pkgs.nixos [
-        (flatten [
-          (mkModule.hostName name)
-          (attrValues files.modules)
-          files.config
-          files.configs.${name}
-          extraModules
-        ])
-      ]
+      pkgs.nixos (flatten [
+        (mkModule.hostName name)
+        (attrValues files.modules)
+        files.config
+        files.configs.${name}
+        extraModules
+      ])
     ) nixosHosts;
 }
