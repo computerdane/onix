@@ -7,7 +7,6 @@
   extraHomeManagerModules,
   extraHomeManagerSpecialArgs,
   files,
-  olib,
   overlays,
 }:
 
@@ -23,41 +22,39 @@ let
 
   allPackages = mapAttrs (name: pkg: callPackage pkg { }) files.packages;
 
-  homeConfigurations = olib.eachSystem (
-    listToAttrs (
-      flatten (
-        mapAttrsToList (
-          hostname:
+  homeConfigurations = listToAttrs (
+    flatten (
+      mapAttrsToList (
+        hostname:
+        {
+          users ? { },
+          ...
+        }:
+        (mapAttrsToList (
+          username:
           {
-            users ? { },
+            hm-configs ? [ ],
             ...
           }:
-          (mapAttrsToList (
-            username:
-            {
-              hm-configs ? [ ],
-              ...
-            }:
-            {
-              name = "${username}@${hostname}";
-              value = home-manager.lib.homeManagerConfiguration {
-                inherit pkgs;
-                modules = import ./home-manager-modules.nix {
-                  inherit
-                    extraHomeManagerModules
-                    files
-                    hm-configs
-                    lib
-                    overlays
-                    username
-                    ;
-                };
-                extraSpecialArgs = extraHomeManagerSpecialArgs;
+          {
+            name = "${username}@${hostname}";
+            value = home-manager.lib.homeManagerConfiguration {
+              inherit pkgs;
+              modules = import ./home-manager-modules.nix {
+                inherit
+                  extraHomeManagerModules
+                  files
+                  hm-configs
+                  lib
+                  overlays
+                  username
+                  ;
               };
-            }
-          ) users)
-        ) files.hosts
-      )
+              extraSpecialArgs = extraHomeManagerSpecialArgs;
+            };
+          }
+        ) users)
+      ) files.hosts
     )
   );
 in

@@ -112,7 +112,6 @@ rec {
         extraHomeManagerModules
         extraHomeManagerSpecialArgs
         files
-        olib
         overlays
         ;
     }
