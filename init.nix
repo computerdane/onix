@@ -19,6 +19,7 @@ let
 
   olib = import ./olib.nix { inherit lib; };
 
+  # Read source tree and import all modules
   files = {
     config = olib.importOrEmpty (append src "configuration.nix");
     configs = olib.importNixFilesRecursive "configuration" (append src "configs");
@@ -31,11 +32,13 @@ let
     hm-modules = olib.importNixFilesRecursive "module" (append src "hm-modules");
   };
 
+  # Grab unique systems from `hosts/`
   systems = unique (mapAttrsToList (name: host: host.system) files.hosts);
 
 in
 
 rec {
+
   # Custom modules
   nixosModules = files.modules;
   homeManagerModules = files.hm-modules;
@@ -68,11 +71,15 @@ rec {
       in
       lib.nixosSystem { inherit system modules; }
     ) nixosHosts;
+
 }
-// (olib.eachSystem systems (
-  system:
-  let
-    pkgs = import nixpkgs { inherit system; };
-  in
-  pkgs.callPackage ./per-system.nix { inherit files; }
-))
+// (
+  # Create the per-system flake outputs
+  olib.eachSystem systems (
+    system:
+    let
+      pkgs = import nixpkgs { inherit system; };
+    in
+    pkgs.callPackage ./per-system.nix { inherit files; }
+  )
+)
