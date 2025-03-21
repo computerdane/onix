@@ -15,13 +15,12 @@
 let
 
   inherit (lib)
-    append
     attrValues
     filterAttrs
     flatten
     mapAttrs
-    nixosSystem
     ;
+  inherit (lib.path) append;
 
   files = {
     config = olib.importOrEmpty (append src "configuration.nix");

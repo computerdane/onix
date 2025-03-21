@@ -10,15 +10,15 @@
 
 let
   inherit (lib)
-    flatten
-    mapAttrs'
-    nameValuePair
     filterAttrs
-    mapAttrsToList
-    append
+    flatten
     hasSuffix
+    mapAttrs'
+    mapAttrsToList
+    nameValuePair
     removeSuffix
     ;
+  inherit (lib.path) append;
 in
 
 rec {
