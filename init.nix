@@ -5,10 +5,11 @@
 
   extraModules ? [ ],
   extraOverlays ? { },
+  nixpkgsConfig ? { },
 }:
 
 let
-  pkgs = if flake then null else import nixpkgs { };
+  pkgs = if flake then null else import nixpkgs { config = nixpkgsConfig; };
   lib = if flake then nixpkgs.lib else pkgs.lib;
 
   inherit (lib)
