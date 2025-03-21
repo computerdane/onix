@@ -1,5 +1,6 @@
 {
-  pkgs ? import <nixpkgs> { },
+  nixpkgs ? <nixpkgs>,
+  pkgs ? import nixpkgs { },
 }:
 
 let
@@ -7,5 +8,5 @@ let
 in
 
 {
-  init = pkgs.callPackage ./init.nix { inherit olib; };
+  init = pkgs.callPackage ./init.nix { inherit nixpkgs olib; };
 }

@@ -1,7 +1,8 @@
 {
-  olib,
-  lib,
   callPackage,
+  lib,
+  nixpkgs,
+  olib,
 }:
 
 {
@@ -72,7 +73,7 @@ rec {
     mapAttrs (
       name: host:
       let
-        pkgs = import <nixpkgs> {
+        pkgs = import nixpkgs {
           system = host.system;
           overlays = flatten [
             (attrValues overlays)
