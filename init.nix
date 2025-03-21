@@ -43,15 +43,12 @@ let
   systems = unique (mapAttrsToList (name: host: host.system) files.hosts);
   eachSystem =
     attrs:
-    concatMapAttrs (
-      name: value:
-      listToAttrs (
-        map (system: {
-          name = system;
-          value.${name} = value;
-        }) systems
-      )
-    ) attrs;
+    listToAttrs (
+      map (name: {
+        inherit name;
+        value = attrs;
+      }) systems
+    );
 
   mkModule = {
     hostName =
