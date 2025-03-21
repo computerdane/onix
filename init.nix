@@ -80,7 +80,8 @@
             mapAttrsToList (
               host:
               {
-                hm-users ? { },
+                users ? { },
+                ...
               }:
               # And each user in that host
               mapAttrsToList (
@@ -104,7 +105,7 @@
                     extraSpecialArgs = hmSpecialArgs;
                   };
                 }
-              ) hm-users
+              ) users
             ) onix.hosts
           )
         );
@@ -130,17 +131,17 @@
       name:
       {
         system,
-        hm-users ? { },
+        users ? { },
       }:
       let
         homeManagerNixosModules =
-          if hm-users != { } then
+          if users != { } then
             [
               home-manager.nixosModules.home-manager
               (import ./home-manager-nixos-modules.nix {
                 inherit
                   nixpkgs
-                  hm-users
+                  users
                   onix
                   overlaysModule
                   hmModules
