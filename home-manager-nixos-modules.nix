@@ -1,6 +1,6 @@
 {
   nixpkgs,
-  hm-users,
+  users,
   onix,
   overlaysModule,
   hmModules,
@@ -35,4 +35,4 @@ mapAttrsToList (
     home-manager.extraSpecialArgs = hmSpecialArgs;
 
   }
-) hm-users
+) users
