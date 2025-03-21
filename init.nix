@@ -52,6 +52,13 @@ let
       {
         nixpkgs.overlays = attrValues overlays;
       };
+
+    nixpkgsConfig =
+      c:
+      { ... }:
+      {
+        nixpkgs.config = c;
+      };
   };
 
 in
@@ -76,6 +83,7 @@ rec {
           (mkModule.hostName name)
           (mkModule.overlays overlays)
           (mkModule.overlays extraOverlays)
+          (mkModule.nixpkgsConfig nixpkgsConfig)
           (attrValues files.modules)
           files.config
           files.configs.${name}
