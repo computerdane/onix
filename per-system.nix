@@ -66,4 +66,7 @@ in
 
   # Custom packages, derivations only
   packages = (filterAttrs (name: pkg: isDerivation pkg) allPackages);
+
+  # Dev shell with some useful aliases
+  devShells.default = pkgs.mkShell { buildInputs = pkgs.callPackage ./scripts.nix { }; };
 }
