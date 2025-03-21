@@ -11,14 +11,7 @@
 let
   defaultOverlay = final: prev: mapAttrs (name: pkg: prev.callPackage pkg { }) files.packages;
 
-  pkgs =
-    if flake then
-      null
-    else
-      import nixpkgs {
-        config = nixpkgsConfig;
-        overlays = (attrValues defaultOverlay) ++ (attrValues extraOverlays);
-      };
+  pkgs = if flake then null else import nixpkgs { };
   lib = if flake then nixpkgs.lib else pkgs.lib;
 
   inherit (lib)
@@ -30,6 +23,15 @@ let
     unique
     ;
   inherit (lib.path) append;
+
+  systemPkgs =
+    if flake then
+      null
+    else
+      import nixpkgs {
+        config = nixpkgsConfig;
+        overlays = [ defaultOverlay ] ++ (attrValues extraOverlays);
+      };
 
   olib = import ./olib.nix { inherit lib; };
 
@@ -107,7 +109,7 @@ rec {
           modules = modules ++ nixpkgsModules;
         }
       else
-        pkgs.nixos modules
+        systemPkgs.nixos modules
     ) nixosHosts;
 }
 // (olib.eachSystem systems (
