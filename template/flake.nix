@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     home-manager.url = "github:nix-community/home-manager";
-    onix.url = "github:computerdane/onix/v0.1.0";
+    onix.url = "github:computerdane/onix/v0.1.1";
   };
 
   outputs =
