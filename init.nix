@@ -57,7 +57,7 @@ rec {
   # NixOS configuration for each host
   nixosConfigurations =
     let
-      nixosHosts = (filterAttrs (name: host: (host.homeManagerOnly or false) == false) files.hosts);
+      nixosHosts = (filterAttrs (name: host: !(host.homeManagerOnly or false)) files.hosts);
     in
     mapAttrs (
       name:
@@ -74,6 +74,7 @@ rec {
             files
             home-manager
             lib
+            olib
             overlays
             users
             ;
@@ -113,6 +114,7 @@ rec {
         extraHomeManagerSpecialArgs
         files
         home-manager
+        olib
         overlays
         ;
     }

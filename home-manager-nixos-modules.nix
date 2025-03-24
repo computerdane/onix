@@ -3,6 +3,7 @@
   extraHomeManagerSpecialArgs,
   files,
   home-manager,
+  olib,
   lib,
   overlays,
   users,
@@ -12,10 +13,8 @@ let
   inherit (lib) flatten mapAttrsToList;
 in
 
-if users == { } then
-  [ ]
-else
-  flatten [
+if users != { } then
+  olib.assertHomeManagerIsNotNull home-manager (flatten [
     home-manager.nixosModules.home-manager
     (mapAttrsToList (
       username:
@@ -40,4 +39,6 @@ else
         home-manager.extraSpecialArgs = extraHomeManagerSpecialArgs;
       }
     ) users)
-  ]
+  ])
+else
+  [ ]

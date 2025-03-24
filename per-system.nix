@@ -7,6 +7,7 @@
   extraHomeManagerSpecialArgs,
   files,
   home-manager,
+  olib,
   overlays,
 }:
 
@@ -38,20 +39,22 @@ let
           }:
           {
             name = "${username}@${hostname}";
-            value = home-manager.lib.homeManagerConfiguration {
-              inherit pkgs;
-              modules = import ./home-manager-modules.nix {
-                inherit
-                  extraHomeManagerModules
-                  files
-                  hm-configs
-                  lib
-                  overlays
-                  username
-                  ;
-              };
-              extraSpecialArgs = extraHomeManagerSpecialArgs;
-            };
+            value = olib.assertHomeManagerIsNotNull home-manager (
+              home-manager.lib.homeManagerConfiguration {
+                inherit pkgs;
+                modules = import ./home-manager-modules.nix {
+                  inherit
+                    extraHomeManagerModules
+                    files
+                    hm-configs
+                    lib
+                    overlays
+                    username
+                    ;
+                };
+                extraSpecialArgs = extraHomeManagerSpecialArgs;
+              }
+            );
           }
         ) users)
       ) files.hosts

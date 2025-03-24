@@ -117,4 +117,12 @@ rec {
   eachSystemOp =
     op: systems: f:
     builtins.foldl' (op f) { } systems;
+
+  # Make sure the home-manager argument is not null
+  assertHomeManagerIsNotNull =
+    home-manager: value:
+    if home-manager != null then
+      value
+    else
+      throw "You must include the `home-manager` argument to onix.init if you set a user's `hm-configs` in a hosts file!";
 }
