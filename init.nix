@@ -9,6 +9,8 @@
 
   extraSpecialArgs ? { },
   extraHomeManagerSpecialArgs ? { },
+
+  installHelperScripts ? false,
 }:
 
 let
@@ -73,6 +75,7 @@ rec {
             extraHomeManagerSpecialArgs
             files
             home-manager
+            installHelperScripts
             lib
             olib
             overlays
@@ -81,10 +84,11 @@ rec {
         };
         modules = flatten [
           (
-            { ... }:
+            { lib, pkgs, ... }:
             {
               networking.hostName = name;
               nixpkgs.overlays = [ overlays.default ];
+              environment.systemPackages = lib.mkIf installHelperScripts (pkgs.callPackage ./scripts.nix { });
             }
           )
           (attrValues files.modules)
@@ -117,6 +121,7 @@ rec {
         extraHomeManagerSpecialArgs
         files
         home-manager
+        installHelperScripts
         olib
         overlays
         ;

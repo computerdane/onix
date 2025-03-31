@@ -3,6 +3,7 @@
   extraHomeManagerSpecialArgs,
   files,
   home-manager,
+  installHelperScripts,
   olib,
   lib,
   overlays,
@@ -30,6 +31,7 @@ if users != { } then
                 extraHomeManagerModules
                 files
                 hm-configs
+                installHelperScripts
                 lib
                 overlays
                 username

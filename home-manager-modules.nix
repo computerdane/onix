@@ -2,6 +2,7 @@
   extraHomeManagerModules,
   files,
   hm-configs,
+  installHelperScripts,
   lib,
   overlays,
   username,
@@ -13,11 +14,12 @@ in
 
 flatten [
   (
-    { ... }:
+    { lib, pkgs, ... }:
     {
       home.username = username;
       programs.home-manager.enable = true;
       nixpkgs.overlays = attrValues overlays;
+      home.packages = lib.mkIf installHelperScripts (pkgs.callPackage ./scripts.nix { });
     }
   )
   (attrValues files.hm-modules)

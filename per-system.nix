@@ -7,6 +7,7 @@
   extraHomeManagerSpecialArgs,
   files,
   home-manager,
+  installHelperScripts,
   olib,
   overlays,
 }:
@@ -47,6 +48,7 @@ let
                     extraHomeManagerModules
                     files
                     hm-configs
+                    installHelperScripts
                     lib
                     overlays
                     username
@@ -69,7 +71,4 @@ in
 
   # Custom packages, derivations only
   packages = (filterAttrs (name: pkg: isDerivation pkg) allPackages);
-
-  # Dev shell with some useful aliases
-  devShells.default = pkgs.mkShell { buildInputs = pkgs.callPackage ./scripts.nix { }; };
 }
