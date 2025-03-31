@@ -106,7 +106,10 @@ rec {
   olib.eachSystem systems (
     system:
     let
-      pkgs = import nixpkgs { inherit system; };
+      pkgs = import nixpkgs {
+        inherit system;
+        overlays = [ overlays.default ];
+      };
     in
     pkgs.callPackage ./per-system.nix {
       inherit
