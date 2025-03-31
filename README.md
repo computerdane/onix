@@ -8,7 +8,7 @@
 - 🛠️ Builds NixOS configs with your modules and packages included
 - 📦 Generates Flake outputs for easy usage and collaboration
 - 🏠 Simple Home Manager integration for NixOS and non-NixOS systems
-- 🐚 Creates a dev shell with convenient aliases for common NixOS commands
+- 🔧 Installs convenient aliases for common NixOS commands
 
 ## Usage
 
@@ -96,9 +96,20 @@ made available:
 - `devShells.${system}` - A dev shell with some useful aliases
 - `overlays.default` - A nixpkgs overlay that includes all your packages
 
-## Dev Shell
+## Helper Scripts
 
-To use the dev shell, use `nix develop` on your onix Flake.
+To install the onix helper scripts, set `installHelperScripts = true` in your
+`onix.init` function:
+
+```nix
+  onix.init {
+    inherit nixpkgs;
+    src = ./.;
+    installHelperScripts = true;
+  };
+```
+
+When enabled, these programs will be installed on your system:
 
 - `oswitch [name]` - Switch to a configuration (name is optional)
 - `ohmswitch [name]` - Switch to a Home Manager configuration (name is optional)
