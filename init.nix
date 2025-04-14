@@ -37,7 +37,7 @@ let
     packages = olib.importNixFilesRecursive "package" (append src "packages");
 
     hm-config = olib.importOrEmpty (append src "home.nix");
-    hm-configs = olib.importNixFilesRecursive "home" (append src "hm-configs");
+    hm-configs = olib.importNixFilesFromSubdirsRecursive "home" (append src "hm-configs");
     hm-modules = olib.importNixFilesRecursive "module" (append src "hm-modules");
   };
 
@@ -59,13 +59,12 @@ rec {
   # NixOS configuration for each host
   nixosConfigurations =
     let
-      nixosHosts = (filterAttrs (name: host: !(host.homeManagerOnly or false)) files.hosts);
+      nixosHosts = (filterAttrs (hostname: host: !(host.homeManagerOnly or false)) files.hosts);
     in
     mapAttrs (
-      name:
+      hostname:
       {
         system,
-        users ? { },
         ...
       }:
       let
@@ -75,25 +74,25 @@ rec {
             extraHomeManagerSpecialArgs
             files
             home-manager
+            hostname
             installHelperScripts
             lib
             olib
             overlays
-            users
             ;
         };
         modules = flatten [
           (
             { lib, pkgs, ... }:
             {
-              networking.hostName = name;
+              networking.hostName = hostname;
               nixpkgs.overlays = [ overlays.default ];
               environment.systemPackages = lib.mkIf installHelperScripts (pkgs.callPackage ./scripts.nix { });
             }
           )
           (attrValues files.modules)
           files.config
-          files.configs.${name}
+          files.configs.${hostname}
           extraModules
           homeManagerNixosModules
         ];

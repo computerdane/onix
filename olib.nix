@@ -6,6 +6,7 @@ let
     filterAttrs
     flatten
     hasSuffix
+    mapAttrs
     mapAttrs'
     mapAttrsToList
     nameValuePair
@@ -29,6 +30,14 @@ rec {
     dir:
     if builtins.pathExists dir then
       filterAttrs (path: type: type == "regular" && isNixFile path) (builtins.readDir dir)
+    else
+      [ ];
+
+  # List all of the sub-directories in a directory
+  listDirs =
+    dir:
+    if builtins.pathExists dir then
+      filterAttrs (path: type: type == "directory") (builtins.readDir dir)
     else
       [ ];
 
@@ -90,6 +99,14 @@ rec {
         }
       ) (listNixFilesRecursive defaultFileName dir)
     );
+
+  # Import all of the .nix files from {dir}/{subdir}, organized as an attrset of subdir -> configs
+  importNixFilesFromSubdirsRecursive =
+    defaultFileName: dir:
+    if builtins.pathExists dir then
+      mapAttrs (subdir: type: importNixFilesRecursive defaultFileName (append dir subdir)) (listDirs dir)
+    else
+      { };
 
   # Imports a .nix file, and if it doesn't exist, returns a blank function
   importOrEmpty = path: if builtins.pathExists path then import path else { ... }: { };

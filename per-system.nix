@@ -27,39 +27,28 @@ let
   homeConfigurations = listToAttrs (
     flatten (
       mapAttrsToList (
-        hostname:
-        {
-          users ? { },
-          ...
-        }:
-        (mapAttrsToList (
-          username:
-          {
-            hm-configs ? [ ],
-            ...
-          }:
-          {
-            name = "${username}@${hostname}";
-            value = olib.assertHomeManagerIsNotNull home-manager (
-              home-manager.lib.homeManagerConfiguration {
-                inherit pkgs;
-                modules = import ./home-manager-modules.nix {
-                  inherit
-                    extraHomeManagerModules
-                    files
-                    hm-configs
-                    installHelperScripts
-                    lib
-                    overlays
-                    username
-                    ;
-                };
-                extraSpecialArgs = extraHomeManagerSpecialArgs;
-              }
-            );
-          }
-        ) users)
-      ) files.hosts
+        hostname: user-configs:
+        (mapAttrsToList (username: user-config: {
+          name = "${username}@${hostname}";
+          value = olib.assertHomeManagerIsNotNull home-manager (
+            home-manager.lib.homeManagerConfiguration {
+              inherit pkgs;
+              modules = import ./home-manager-modules.nix {
+                inherit
+                  extraHomeManagerModules
+                  files
+                  installHelperScripts
+                  lib
+                  overlays
+                  user-config
+                  username
+                  ;
+              };
+              extraSpecialArgs = extraHomeManagerSpecialArgs;
+            }
+          );
+        }) user-configs)
+      ) files.hm-configs
     )
   );
 in
