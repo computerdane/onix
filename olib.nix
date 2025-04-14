@@ -2,6 +2,7 @@
 
 let
   inherit (lib)
+    any
     attrNames
     filterAttrs
     flatten
@@ -125,4 +126,18 @@ rec {
       value
     else
       throw "You must include the `home-manager` argument to onix.init if you set a user's `hm-configs` in a hosts file!";
+
+  # Function to insert onix arg into special args
+  withOnixArg =
+    meta: specialArgs:
+    specialArgs
+    // {
+      onix = {
+        inherit meta;
+        lib = {
+          mkForHosts = hosts: cfg: lib.mkIf (any (host: host == meta.host) hosts) cfg;
+          mkForUsers = users: cfg: lib.mkIf (any (user: user == meta.user) users) cfg;
+        };
+      };
+    };
 }

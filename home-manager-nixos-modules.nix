@@ -3,6 +3,7 @@
   extraHomeManagerSpecialArgs,
   files,
   home-manager,
+  hostname,
   installHelperScripts,
   olib,
   lib,
@@ -11,36 +12,32 @@
 }:
 
 let
-  inherit (lib) flatten mapAttrsToList;
+  inherit (lib) flatten;
 in
 
 if users != { } then
   olib.assertHomeManagerIsNotNull home-manager (flatten [
     home-manager.nixosModules.home-manager
-    (mapAttrsToList (
-      username:
-      {
-        hm-configs ? { },
-      }:
-      {
-        home-manager.users.${username} =
-          { ... }:
-          {
-            imports = import ./home-manager-modules.nix {
-              inherit
-                extraHomeManagerModules
-                files
-                hm-configs
-                installHelperScripts
-                lib
-                overlays
-                username
-                ;
-            };
+    (map (username: {
+      home-manager.users.${username} =
+        { ... }:
+        {
+          imports = import ./home-manager-modules.nix {
+            inherit
+              extraHomeManagerModules
+              files
+              installHelperScripts
+              lib
+              overlays
+              username
+              ;
           };
-        home-manager.extraSpecialArgs = extraHomeManagerSpecialArgs;
-      }
-    ) users)
+        };
+      home-manager.extraSpecialArgs = olib.withOnixArg {
+        host = hostname;
+        user = username;
+      } extraHomeManagerSpecialArgs;
+    }) users)
   ])
 else
   [ ]

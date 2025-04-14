@@ -1,7 +1,6 @@
 {
   extraHomeManagerModules,
   files,
-  hm-configs,
   installHelperScripts,
   lib,
   overlays,
@@ -24,6 +23,5 @@ flatten [
   )
   (attrValues files.hm-modules)
   files.hm-config
-  (map (n: files.hm-configs.${n}) hm-configs)
   extraHomeManagerModules
 ]
