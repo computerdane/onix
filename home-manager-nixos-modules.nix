@@ -15,10 +15,10 @@ let
   inherit (lib) flatten;
 in
 
-if users != { } then
+if users != [ ] then
   olib.assertHomeManagerIsNotNull home-manager (flatten [
     home-manager.nixosModules.home-manager
-    (map (username: {
+    (builtins.map (username: {
       home-manager.users.${username} =
         { ... }:
         {

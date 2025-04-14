@@ -9,8 +9,11 @@ let
     hasSuffix
     mapAttrs'
     mapAttrsToList
+    mkIf
+    mkMerge
     nameValuePair
     removeSuffix
+    splitString
     ;
   inherit (lib.path) append;
 in
@@ -83,7 +86,7 @@ rec {
   importNixFilesRecursive =
     defaultFileName: dir:
     builtins.listToAttrs (
-      map (
+      builtins.map (
         { path, name }:
         {
           inherit name;
@@ -135,8 +138,28 @@ rec {
       onix = {
         inherit meta;
         lib = {
-          mkForHosts = hosts: cfg: lib.mkIf (any (host: host == meta.host) hosts) cfg;
-          mkForUsers = users: cfg: lib.mkIf (any (user: user == meta.user) users) cfg;
+          mkForHosts = hosts: cfg: mkIf (any (host: host == meta.host) hosts) cfg;
+          mkForUsers = users: cfg: mkIf (any (user: user == meta.user) users) cfg;
+          mapHostUser =
+            hostAttrs:
+            flatten (
+              mapAttrsToList (
+                hostnameStr: userAttrs:
+                let
+                  hostnames = splitString " " hostnameStr;
+                in
+                (builtins.map (
+                  hostname:
+                  (mapAttrsToList (
+                    usernameStr: cfg:
+                    let
+                      usernames = splitString " " usernameStr;
+                    in
+                    (builtins.map (username: mkIf (hostname == meta.host && username == meta.user) cfg) usernames)
+                  ) userAttrs)
+                ) hostnames)
+              ) hostAttrs
+            );
         };
       };
     };
